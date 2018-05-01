@@ -1,0 +1,21 @@
+module MEM_Stage (
+          input clk,
+          input MEM_R_EN,
+          input MEM_W_EN,
+          input [31:0] ALU_result_in,
+          input [31:0] ST_val,
+          output [31:0] Mem_read_value
+     );
+
+     module Data_memory(
+             input clk,
+             input MEM_W_EN, MEM_R_EN
+             input [31:0] ALU_result,
+             input [31:0] ST_value,
+             input Write_En,
+
+             output [31:0] MEM_OUT);
+
+     Data_memory dm(.clk(clk), .MEM_W_EN(MEM_W_EN), .MEM_R_EN(MEM_R_EN), .ALU_result(ALU_result_in), .ST_value(ST_val), .MEM_OUT(Mem_read_value));
+
+endmodule // MEM_Stage

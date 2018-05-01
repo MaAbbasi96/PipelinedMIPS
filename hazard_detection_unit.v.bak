@@ -1,0 +1,19 @@
+module hazard_detection_unit (
+        input [4:0] src1,
+        input [4:0] src2,
+        input [4:0] exe_dest,
+        input exe_wb_en,
+        input [4:0] mem_dest,
+        input mem_wb_en,
+        input one_input,
+        input forward_enable,
+        input MEM_R_EN,
+        output hazard_detection
+    );
+
+    assign hazard_detection = (!forward_enable && src1 == exe_dest && exe_wb_en)? 1:
+                            (!forward_enable && !one_input && src2 == exe_dest && exe_wb_en)? 1:
+                            (!forward_enable && src1 == mem_dest && mem_wb_en)? 1:
+                            (!forward_enable && !one_input && src2 == mem_dest && mem_wb_en)? 1:
+                            (forward_enable && MEM_R_EN && (exe_dest == src1 || (exe_dest == src2 && !one_input ))? 1:0 ;
+endmodule

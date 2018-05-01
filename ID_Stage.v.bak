@@ -1,0 +1,40 @@
+module ID_Stage (
+          input clk,
+          input rst,
+          input [31:0] Instruction,
+          input [31:0] reg1,
+          input [31:0] reg2,
+          output [4:0] src1,
+          output [4:0] src2,
+          output [4:0] Dest,
+          output [31:0] Reg2,
+          output [31:0] Val2,
+          output [31:0] Val1,
+          output [1:0] Br_type,
+          output [3:0] EXE_CMD,
+          output MEM_R_EN,
+          output MEM_W_EN,
+          output WB_EN
+     );
+
+     wire CU_is_imm;
+
+     assign Reg2 = reg2;
+
+     assign Val1 = reg1;
+
+     assign src1 = Instruction[25:21];
+     assign src2 = Instruction[20:16];
+
+     ControlUnit CU(.opcode(Instruction[31:26]), .EXE_CMD(EXE_CMD), .br_type(Br_type),
+                    .mem_read(MEM_R_EN), .mem_write(MEM_W_EN), .wb_en(WB_EN), is_imm(CU_is_imm));
+
+     SignExt SE(.immediate(Instruction[15:0]), .immediate_ext(SE_immediate_ext));
+
+     module Mux2 (input sel, input [31:0] in0, input [31:0] in1, output [31:0] out);
+
+     Mux2 Val_Mux(.sel(CU_is_imm), .in0(reg2), in1(SE_immediate_ext), .out(Val2));
+
+     Mux2_5bit Dest_Mux(.sel(CU_is_imm), .in0(Instruction[15:11]), .in1(Instruction[20:16]), .out(Dest));
+
+endmodule // ID_Stage

@@ -1,0 +1,21 @@
+module EXE_Stage(
+        input clk,
+        input [3:0] EXE_CMD,
+        input [31:0] val1,
+        input [31:0] val2,
+        input [31:0] val_src2,
+        input [31:0] PC,
+        input [1:0] Br_type,
+
+        output [31:0] ALU_result,
+        output [31:0] Br_addr,
+        output Br_taken
+    );
+
+    ALU ALU(.val1(val1), .val2(val2), .EXE_CMD(EXE_CMD), .ALU_result(ALU_result));
+
+    condition_check condition_check(.branch_type(Br_type), .val1(val1), .src2_val(val_src2), .branch_taken(Br_taken));
+
+    Adder PC_adder(.in1(val2), in2(PC), .out(Br_addr));
+
+endmodule //EXE_Stage
