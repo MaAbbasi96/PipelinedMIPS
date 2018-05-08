@@ -26,8 +26,11 @@ module SRAM_Controller (
     reg [17:0] SRAM_ADDR_reg;
     reg [15:0] SRAM_DQ_reg;
 
-    assign address1 = {address[18:2], 1'b0};
-    assign address2 = {address[18:2], 1'b1};
+    wire [31:0] address_temp;
+    assign address_temp = address - 1024;
+
+    assign address1 = {address_temp[18:2], 1'b0};
+    assign address2 = {address_temp[18:2], 1'b1};
 
     always @ ( ps ) begin
           if(ps == WR4) ns = WR0;

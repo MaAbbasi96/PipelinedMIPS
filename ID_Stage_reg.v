@@ -31,7 +31,7 @@ module ID_Stage_reg (
      );
 
      always @(posedge clk) begin
-        if(rst | flush) begin
+        if(rst | (flush & !freeze)) begin
             Dest <= 5'b0;
             Reg2 <= 32'b0;
             Val2 <= 32'b0;
