@@ -9,7 +9,7 @@ module SRAM_Controller (
         //to next stage
         output reg [31:0] readData,
         //for freeze other stage
-        output reg ready,
+        output ready,
         inout [15:0] SRAM_DQ,				//	SRAM Data bus 16 Bits
         output [17:0] SRAM_ADDR,				//	SRAM Address bus 18 Bits
         output reg SRAM_UB_N,				//	SRAM High-byte Data Mask
@@ -34,23 +34,17 @@ module SRAM_Controller (
           else ns = ps + 1;
     end
 
-    always @ ( * ) begin
-        ready = 1;
+    always @ ( posedge clk ) begin
         {SRAM_UB_N, SRAM_LB_N, SRAM_CE_N, SRAM_OE_N, SRAM_WE_N} = 5'd1;
           case(ps)
                 WR0: begin
-                        if(wr_en) ready = 0;
-                        else if(rd_en) begin readData[15:0] = SRAM_DQ; ready = 0; end
+                        if(wr_en) begin SRAM_DQ_reg <= writeData[31:16]; SRAM_ADDR_reg <= address2; SRAM_WE_N <= 1'b0; end
+                        else if(rd_en) begin readData[15:0] <= SRAM_DQ; end
                     end
                 WR1: begin
-                        if(wr_en) begin SRAM_DQ_reg = writeData[15:0]; SRAM_ADDR_reg = address1; SRAM_WE_N = 1'b0; ready = 0; end
-                        else if(rd_en) begin readData[31:16] = SRAM_DQ; ready = 0; end
+                        if(wr_en) begin SRAM_DQ_reg <= writeData[15:0]; SRAM_ADDR_reg <= address1; SRAM_WE_N <= 1'b0; end
+                        else if(rd_en) begin readData[31:16] <= SRAM_DQ; end
                      end
-                WR2: begin
-                        if(wr_en) begin SRAM_DQ_reg = writeData[31:16]; SRAM_ADDR_reg = address2; SRAM_WE_N = 1'b0; ready = 0; end
-                        else if(rd_en) begin ready = 0; end
-                    end
-                WR3: if(rd_en | wr_en) ready = 0;
           endcase
     end
 
@@ -61,7 +55,8 @@ module SRAM_Controller (
                ps <= ns;
     end
 
-    assign SRAM_ADDR = (wr_en & (ps == WR1 | ps == WR2)) ? SRAM_ADDR_reg : (ps == WR0) ? address1 : (ps == WR1) ? address2 : 16'b0;
-    assign SRAM_DQ = (wr_en & (ps == WR1 | ps == WR2)) ? SRAM_DQ_reg : 16'bzzzzzzzzzzzzzzzz;
+    assign SRAM_ADDR = (wr_en) ? SRAM_ADDR_reg : (ps == WR0) ? address1 : (ps == WR1) ? address2 : 16'b0;
+    assign SRAM_DQ = (wr_en) ? SRAM_DQ_reg : 16'bzzzzzzzzzzzzzzzz;
+    assign ready = ((ps == WR0 || ps == WR3 || ps == WR2 || ps == WR1) && (wr_en | rd_en)) ? 0 : 1;
 
 endmodule // SRAM_Controller
