@@ -16,8 +16,17 @@ module MEM_Stage (
           output SRAM_OE_N
      );
 
+     wire cache_read, cache_write, cache_ready, sram_ready;
+     wire [31:0] cache_sram_address, cache_sram_wdata;
+     wire [63:0] sram_read_data;
+
      // Data_memory dm(.clk(clk), .MEM_W_EN(MEM_W_EN), .MEM_R_EN(MEM_R_EN), .ALU_result(ALU_result_in), .ST_value(ST_val), .MEM_OUT(Mem_read_value));
-     SRAM_Controller SC(.clk(clk), .rst(rst), .wr_en(MEM_W_EN), .rd_en(MEM_R_EN), .address(ALU_result_in), .writeData(ST_val), .readData(Mem_read_value), .ready(ready),
+     SRAM_Controller SC(.clk(clk), .rst(rst), .wr_en(cache_write), .rd_en(cache_read), .address(cache_sram_address), .writeData(cache_sram_wdata), .readData(sram_read_data), .ready(sram_ready),
                     .SRAM_DQ(SRAM_DQ), .SRAM_ADDR(SRAM_ADDR), .SRAM_UB_N(SRAM_UB_N), .SRAM_LB_N(SRAM_LB_N), .SRAM_WE_N(SRAM_WE_N), .SRAM_CE_N(SRAM_CE_N), .SRAM_OE_N(SRAM_OE_N));
+
+    cache_controller CC(.clk(clk), .rst(rst), .MEM_R_EN(MEM_R_EN), .MEM_W_EN(MEM_W_EN), .Address(ALU_result_in), .wdata(ST_val), .rdata(Mem_read_value), .sram_rdata(sram_read_data),
+                        .sram_ready(sram_ready), .ready(cache_ready), .sram_address(cache_sram_address), .sram_wdata(cache_sram_wdata), .write(cache_write), .read(cache_read));
+
+    assign ready = cache_ready | sram_ready;
 
 endmodule // MEM_Stage
